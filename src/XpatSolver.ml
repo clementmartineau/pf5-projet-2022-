@@ -31,6 +31,12 @@ let set_game_seed name =
                       "FreeCell Seahaven MidnightOil BakersDozen")
 
 (* TODO : La fonction suivante est à adapter et continuer *)
+let game_to_string g = 
+  match g with
+  | Freecell -> "Freecell"
+  | Seahaven -> "Seahaven"
+  | Midnight -> "Midnight"
+  | Baker -> "Baker"
 
 let treat_game conf =
   let permut = XpatRandom.shuffle conf.seed in
@@ -40,7 +46,9 @@ let treat_game conf =
   List.iter (fun n -> Printf.printf "%s " (Card.to_string (Card.of_num n)))
     permut;
   print_newline ();
-  print_string "C'est tout pour l'instant. TODO: continuer...\n";
+  print_string ("\nJeu " ^ game_to_string conf.game ^ " avec la permutation " ^ (string_of_int conf.seed) ^ "\n\n");
+  print_string (Etat.etat_to_string (Etat.etat_init (game_to_string conf.game) permut));
+  (* print_string "C'est tout pour l'instant. TODO: continuer...\n"; *)
   exit 0
 
 let main () =
