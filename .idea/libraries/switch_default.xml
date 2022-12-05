@@ -1,0 +1,13 @@
+<component name="libraryTable">
+  <library name="switch:default" type="OCaml">
+    <CLASSES />
+    <JAVADOC />
+    <OCAML_SOURCES>
+      <root url="file://$USER_HOME$/.opam/default/lib/csexp" />
+      <root url="file://$USER_HOME$/.opam/default/lib/findlib" />
+      <root url="file://$USER_HOME$/.opam/default/lib/yojson" />
+      <root url="file://$USER_HOME$/.opam/default/share/ocaml-config" />
+    </OCAML_SOURCES>
+    <SOURCES />
+  </library>
+</component>
