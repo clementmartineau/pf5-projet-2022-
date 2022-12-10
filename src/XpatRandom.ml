@@ -127,7 +127,7 @@ let shuffle_test = function
       - Ou bien (a-b+randmax) si a<b
 *)
 let rec creerPaireAux tab1composant tab2composant n =
-    if n = 55 then List.rev (List.combine tab1composant tab2composant)
+    if n = 55 then List.rev (List.combine tab1composant tab2composant) (* todo List.combine not tail recursive *)
     else let get2composant =
         match tab2composant with
         | b :: a :: tail -> if b <= a then a - b else a - b + randmax
@@ -169,6 +169,9 @@ d) On commence alors par faire 165 tirages successifs en partant
    les entiers issus de ces 165 premiers tirages ne sont pas considérés.
 *)
 
+(*
+renvoie f1 et f2 apres n tirage(s).
+*)
 let rec tirageDeFifo f1 f2 n =
     if n = 0 then f1, f2
     else let (a,f1), (b,f2) = Fifo.pop f1, Fifo.pop f2
@@ -191,11 +194,20 @@ e) La fonction de tirage vue précédemment produit un entier dans
    la permutation, jusqu'à épuisement de la liste. Le dernier nombre retiré
    de la liste donne donc la tête de la permutation.
 *)
+
+(*
+Fonction qui effectue un tirage sur 2 fifo f1 f2.
+Renvoie la valeur du tirage apres l'avoir réduite avec reduce
+ainsi que f1 et f2
+*)
 let tirage f1 f2 n =
     let (a,f1), (b,f2) = Fifo.pop f1, Fifo.pop f2
     in let d = if b <= a then a - b else a - b + randmax
     in (reduce d n), (Fifo.push b f1), (Fifo.push d f2)
 
+(*
+
+*)
 let rec permut f1 f2 acc liste =
     let length = List.length liste in
     if length = 0 then acc
@@ -212,7 +224,7 @@ let getListInt n =
 let shuffle n =
     let listePaire = creerPaire [] [] n
     in let listePaireTriee = List.fast_sort (fun (x1,_) (x2,_) -> compare x1 x2) listePaire
-    in let (_ , listeTri2comp) = List.split listePaireTriee
+    in let (_ , listeTri2comp) = List.split listePaireTriee (*todo List.split not tail recursive*)
     in let f1_init, f2_init = getFifo [] 0 listeTri2comp (* bon jusque la *)
     in let f1, f2 = tirageDeFifo f1_init f2_init 165
     in permut f1 f2 [] (getListInt 52)

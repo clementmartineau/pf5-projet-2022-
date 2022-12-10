@@ -50,6 +50,7 @@ let treat_game conf =
   print_string (Etat.etat_to_string (Etat.etat_init (game_to_string conf.game) permut));
   (* print_string "C'est tout pour l'instant. TODO: continuer...\n"; *)
 
+
   exit 0
 
 let main () =
