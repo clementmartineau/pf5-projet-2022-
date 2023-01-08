@@ -156,7 +156,7 @@ Dans quel ordre visiter les états ? Pour une visite exhaustive et infructueuse,
 
 ### II.3 Codage d'ensembles d'états
 
-Un point crucial de cette recherche est donc de pouvoir déterminer si un état a déjà été rencontré, pour éviter les cycles dans la recherche. Pour cela, on utilise ici des ensembles d'états, et on tester l'appartenance à un tel ensemble. L'usage du module `Set` d'OCaml est recommandé pour cela. Dès que vous disposez d'un type OCaml de vos états (disons `state`) et d'une fonction de comparaison pour ces états (`compare_state : state -> state -> int`), alors la ligne "magique" suivante dans votre code vous fournit un type des ensembles d'états, et de nombreuses fonctions associées:
+Un point crucial de cette recherche est donc de pouvoir déterminer si un état a déjà été rencontré, pour éviter les cycles dans la recherche. Pour cela, on utilise ici des ensembles d'états, et on teste l'appartenance à un tel ensemble. L'usage du module `Set` d'OCaml est recommandé pour cela. Dès que vous disposez d'un type OCaml de vos états (disons `state`) et d'une fonction de comparaison pour ces états (`compare_state : state -> state -> int`), alors la ligne "magique" suivante dans votre code vous fournit un type des ensembles d'états, et de nombreuses fonctions associées:
 
 ```ocaml
 (* définir le type state et la fonction compare_state auparavant *)

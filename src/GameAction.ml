@@ -196,34 +196,3 @@ let rec check etat game coups i =
     | [] -> if configuration_gagnante etat then (etat, 0) else (etat, i)
     | h :: t -> if coup_valide etat h game then check (jeu etat h) game t (i+1)
                 else (etat, i)
-
-
-(* essais infructueux de fonctions :(
-
-
-let rec comp_depot_col dep cols index =
-    match Farray.get(index) with
-    | h :: t -> if h = Card.of_num (dep + 1)
-                then let depot = {trefle = (dep + 1) ;
-                pique = etat.depot.pique ;
-                coeur = etat.depot.coeur ;
-                carreau = etat.depot.carreau}
-                in let colonnes = FArray.set cols index t
-                in
-
-
-
-let mise_au_depot etat =
-    let dep = etat.depot.trefle in
-    let rec parcours_array n =
-        let l = parcours_array
-         match l with
-            | h :: t -> if h = Card.of_num (dep + 1)
-            then let depot = {trefle = (dep + 1) ;
-            pique = etat.depot.pique ;
-            coeur = etat.depot.coeur ;
-            carreau = etat.depot.carreau}
-            in
-     )etat.colonnes
-
-     *)

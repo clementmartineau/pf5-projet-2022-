@@ -1,0 +1,1 @@
+val get_solution : Etat.etat -> (Some string list, string)

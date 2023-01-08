@@ -48,46 +48,72 @@ let read_lines ic =
         | Some line -> aux (line::acc)
         | None -> (List.rev acc)
     in aux []
-
+(* renvoie les lignes du fichier dans une liste *)
 let lines_of_file filename =
     let ic = open_in filename in
     let lines = read_lines ic in
     close_in ic;
     (lines)
 
+(* écris les strings de la liste dans un fichier *)
+let write_to_file filename strings =
+  let file = open_out filename in
+  List.iter (fun s -> output_string file s) strings;
+  close_out file
+
+
 let treat_game conf =
   let permut = XpatRandom.shuffle conf.seed in
-  (* Printf.printf "Voici juste la permutation de graine %d:\n" conf.seed;
+  (*)
+  Printf.printf "Voici juste la permutation de graine %d:\n" conf.seed;
   List.iter (fun n -> print_int n; print_string " ") permut;
   print_newline ();
   List.iter (fun n -> Printf.printf "%s " (Card.to_string (Card.of_num n)))
     permut;
-  print_newline ();*)
-  (* print_string "C'est tout pour l'instant. TODO: continuer...\n"; *)
+  print_newline ();
+  *)
   let game = (game_to_string conf.game) in
   print_string ("\nJeu " ^ game ^ " avec la permutation " ^ (string_of_int conf.seed) ^ "\n");
   
   let etat = (Etat.etat_init (game_to_string conf.game) permut) in
   print_string (Etat.etat_to_string etat);
   
-  let new_etat = 
     match config.mode with
-    | Check(x) -> let filename = x in
-                  let lines = lines_of_file (filename) in
-                  let coups = (GameAction.creer_coup lines) in
-                  (GameAction.check etat game coups 1)
-    | _ -> (etat, (-1)) in
+    | Check(x) ->
+                let new_etat =
+                let filename = x in
+                let lines = lines_of_file (filename) in
+                let coups = (GameAction.creer_coup lines) in
+                (GameAction.check etat game coups 1) in
+                if snd new_etat = -1 then exit 0;
 
-  if snd new_etat = -1 then exit 0;
+                print_string ("\nAprès exécution des coups : \n");
+                print_string (Etat.etat_to_string (fst new_etat));
 
-  print_string ("\nAprès exécution des coups : \n");
-  print_string (Etat.etat_to_string (fst new_etat));
+                if snd new_etat = 0 then print_string "\nSUCCES\n";
+                if snd new_etat = 0 then exit 0;
 
-  if snd new_etat = 0 then print_string "\nSUCCES\n"; 
-  if snd new_etat = 0 then exit 0;
-  
-  if snd new_etat <> 0 then print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n");
-  exit 1
+                if snd new_etat <> 0 then print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n");
+                exit 1
+
+    | Search(x) ->
+                match XpatSearch.get_solution etat with
+                | (Some solution,_) ->
+                                let filename = x in
+                                write_to_file filename solution;
+                                print_string "\nSUCCES\n";
+                                exit 0
+
+                | (None,printSortie) ->
+                                if printSortie = "ECHEC" then
+                                    print_string "\nEHEC\n";
+                                    exit 2
+                                else
+                                    print_string "\nINSOLUBLE\n";
+                                    exit 1
+
+
+
 
 let main () =
   Arg.parse

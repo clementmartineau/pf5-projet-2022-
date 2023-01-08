@@ -115,6 +115,18 @@ let shuffle_test = function
       45;5;3;41;15;12;31;17;28;8;29;30;37]
   | _ -> failwith "shuffle : unsupported number (TODO)"
 
+(*
+A tail recursive implementation of List.combine
+'a list -> 'b list -> ('a * 'b) list
+*)
+let combine list1 list2 =
+  let rec loop list1 list2 acc =
+    match (list1, list2) with
+    | ([], []) -> List.rev acc
+    | (x :: tail1, y :: tail2) -> loop tail1 tail2 ((x, y) :: acc)
+    | _ -> invalid_arg "List.combine"
+  in
+  loop list1 list2 []
 
 (*
     Créer tout d'abord les 55 premières paires suivantes:
@@ -125,21 +137,27 @@ let shuffle_test = function
     Par "différence" entre a et b on entend
       - Ou bien (a-b) si b<=a
       - Ou bien (a-b+randmax) si a<b
+
+
 *)
-let rec creerPaireAux tab1composant tab2composant n =
-    if n = 55 then List.rev (List.combine tab1composant tab2composant) (* todo List.combine not tail recursive *)
-    else let get2composant =
-        match tab2composant with
-        | b :: a :: tail -> if b <= a then a - b else a - b + randmax
-        | _ -> failwith "erreur : tab2composant mal crée"
-    in creerPaireAux ((((List.hd tab1composant) + 21) mod 55) :: tab1composant) (get2composant :: tab2composant) (n + 1)
+
 
 
 let creerPaire tab1composant tab2composant n =
-    creerPaireAux (21 :: 0 :: tab1composant) (1 :: n :: tab2composant) 2
+    let rec creerPaireAux tab1composant tab2composant n =
+        if n = 55 then List.rev (combine tab1composant tab2composant)
+        else let get2composant =
+            match tab2composant with
+            | b :: a :: tail -> if b <= a then a - b else a - b + randmax
+            | _ -> failwith "erreur : tab2composant mal crée"
+        in creerPaireAux
+            ((((List.hd tab1composant) + 21) mod 55) :: tab1composant)
+            (get2composant :: tab2composant) (n + 1)
+
+    in creerPaireAux (21 :: 0 :: tab1composant) (1 :: n :: tab2composant) 2
 
 (*
-    b) Trier ces 55 paires par ordre croissant selon leurs premières composantes,
+    b)Trier ces 55 paires par ordre croissant selon leurs premières composantes,
      puis séparer entre les 24 premières paires et les 31 suivantes.
      Pour les 31 paires, leurs secondes composantes sont à mettre dans
      une FIFO f1_init, dans cet ordre (voir `Fifo.of_list` documenté dans
@@ -169,14 +187,20 @@ d) On commence alors par faire 165 tirages successifs en partant
    les entiers issus de ces 165 premiers tirages ne sont pas considérés.
 *)
 
+(* Fifo -> Fifo -> (int * Fifo * Fifo) *)
+let tirage f1 f2 =
+    let (a,f1), (b,f2) = Fifo.pop f1, Fifo.pop f2
+    in let value = if b <= a then a - b else a - b + randmax
+    in value, (Fifo.push b f1), (Fifo.push value f2)
+
 (*
 renvoie f1 et f2 apres n tirage(s).
 *)
 let rec tirageDeFifo f1 f2 n =
     if n = 0 then f1, f2
-    else let (a,f1), (b,f2) = Fifo.pop f1, Fifo.pop f2
-    in let d = if b <= a then a - b else a - b + randmax
-    in tirageDeFifo (Fifo.push b f1) (Fifo.push d f2) (n - 1)
+    else let (_,f1,f2) = tirage f1 f2
+    in Printf.printf "tirage n° %d" n;
+    tirageDeFifo f1 f2 (n - 1)
 
 (*
 e) La fonction de tirage vue précédemment produit un entier dans
@@ -196,35 +220,46 @@ e) La fonction de tirage vue précédemment produit un entier dans
 *)
 
 (*
-Fonction qui effectue un tirage sur 2 fifo f1 f2.
-Renvoie la valeur du tirage apres l'avoir réduite avec reduce
-ainsi que f1 et f2
-*)
-let tirage f1 f2 n =
-    let (a,f1), (b,f2) = Fifo.pop f1, Fifo.pop f2
-    in let d = if b <= a then a - b else a - b + randmax
-    in (reduce d n), (Fifo.push b f1), (Fifo.push d f2)
-
-(*
 
 *)
 let rec permut f1 f2 acc liste =
     let length = List.length liste in
     if length = 0 then acc
-    else let d,f1,f2 = tirage f1 f2 length
-    in let valSortante = List.nth liste d
-    in permut f1 f2 (valSortante :: acc) (List.filter (fun x -> x != valSortante) liste)
+    else let d,f1,f2 = tirage f1 f2
+    in let d_reduced = reduce d length
+    in let valSortante = List.nth liste d_reduced
+    in permut f1 f2
+        (valSortante :: acc)
+        (List.filter (fun x -> x != valSortante) liste)
 
 let getListInt n =
     let rec getListIntAux n acc =
         if n = -1 then acc
         else getListIntAux (n - 1) (n :: acc)
-    in getListIntAux 51 []
+    in getListIntAux (n - 1) []
+
+(*
+A tail recursive implementation of List.split
+('a * 'b) list -> 'a list * 'b list
+*)
+let split list =
+  let rec loop list acc1 acc2 =
+    match list with
+    | [] -> (List.rev acc1, List.rev acc2)
+    | (x, y) :: tail -> loop tail (x :: acc1) (y :: acc2)
+  in
+  loop list [] []
 
 let shuffle n =
     let listePaire = creerPaire [] [] n
-    in let listePaireTriee = List.fast_sort (fun (x1,_) (x2,_) -> compare x1 x2) listePaire
-    in let (_ , listeTri2comp) = List.split listePaireTriee (*todo List.split not tail recursive*)
-    in let f1_init, f2_init = getFifo [] 0 listeTri2comp (* bon jusque la *)
-    in let f1, f2 = tirageDeFifo f1_init f2_init 165
-    in permut f1 f2 [] (getListInt 52)
+    in Printf.printf "étape 1\n";
+    let listePaireTriee =
+    List.fast_sort (fun (x1,_) (x2,_) -> compare x1 x2) listePaire
+    in Printf.printf "étape 2\n";
+    let (_ , listeTri2comp) = split listePaireTriee
+    in Printf.printf "étape 3\n";
+    let f1_init, f2_init = getFifo [] 0 listeTri2comp
+    in Printf.printf "étape 4\n";
+    let f1, f2 = tirageDeFifo f1_init f2_init 165
+    in Printf.printf "étape 5\n";
+    permut f1 f2 [] (getListInt 52)
