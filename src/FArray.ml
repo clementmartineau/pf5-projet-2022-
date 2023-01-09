@@ -1,3 +1,5 @@
+open Card
+
 (* FArray : Tableaux fonctionnels non-vides
 
    Version simlifiée des Flex-array pour en faire des tableaux
@@ -126,10 +128,10 @@ let rec exists f = function
 (*Fonction compare ajoutée, ne fait pas partie de l'implémentation originale des FArray*)
 
 (* comparaison d'une liste a toutes les autres d'un FArray*)
-let rec compare_list_FA (Card.card list:liste) (Card.card list FArray:fa) =
+let rec compare_list_FA (Card.card list:l) (Card.card list FArray:fa) =
     match fa with
-    | Leaf x -> List.compare (Card.compare) liste x
-    | Node(left, right) -> (compare_list_FA liste left) + (compare_list_FA liste right)
+    | Leaf x -> List.compare (Card.compare) l x
+    | Node(left, right) -> (compare_list_FA l left) + (compare_list_FA l right)
 
 (*comparaison de toutes les listes d'un FArray avec toutes les listes d'un autre
 comparaison de toutes les listes à toutes les listes -> donc pour colA et colB on vérifie 1a = 1b, 1a = 2b, ..., 2a = 1b, 2a = 2b, ...  etc

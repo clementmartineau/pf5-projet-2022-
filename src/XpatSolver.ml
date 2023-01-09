@@ -64,7 +64,7 @@ let write_to_file filename strings =
 
 let treat_game conf =
   let permut = XpatRandom.shuffle conf.seed in
-  (*)
+  (*
   Printf.printf "Voici juste la permutation de graine %d:\n" conf.seed;
   List.iter (fun n -> print_int n; print_string " ") permut;
   print_newline ();
@@ -102,17 +102,15 @@ let treat_game conf =
                                 let filename = x in
                                 write_to_file filename solution;
                                 print_string "\nSUCCES\n";
-                                exit 0
 
                 | (None,printSortie) ->
                                 if printSortie = "ECHEC" then
                                     print_string "\nEHEC\n";
-                                    exit 2
-                                else
+                                    exit 2;
+                                if printSortie = "INSOLUBLE" then
                                     print_string "\nINSOLUBLE\n";
-                                    exit 1
-
-
+                                    exit 1;
+  exit 0
 
 
 let main () =
