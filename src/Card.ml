@@ -55,7 +55,6 @@ let compare c1 c2 =
     | (r1,s1),(r2,s2) ->
         if r1 == r2 && s1 == s2 then 0
         else 1
-    | _ -> 1
 
 let compare_option oc1 oc2 =
     match oc1,oc2 with

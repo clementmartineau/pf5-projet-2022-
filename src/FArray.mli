@@ -33,7 +33,7 @@ val fold : ('a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 val foldi : (int -> 'a -> 'b -> 'b) -> 'a t -> 'b -> 'b
 
 (* 0 -> égalité *)
-val compare_cols (Card.card list) FArray -> (Card.card list) FArray -> int
-val compare_card (Card.card option) FArray.t -> (Card.card option) FArray.t -> int
+val compare_cols : (Card.card list) FArray -> (Card.card list) FArray -> int
+val compare_card : (Card.card option) FArray.t -> (Card.card option) FArray.t -> int
 
 
