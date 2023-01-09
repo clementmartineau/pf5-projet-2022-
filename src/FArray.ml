@@ -1,5 +1,3 @@
-open Card
-
 (* FArray : Tableaux fonctionnels non-vides
 
    Version simlifiée des Flex-array pour en faire des tableaux
@@ -128,7 +126,7 @@ let rec exists f = function
 (*Fonction compare ajoutée, ne fait pas partie de l'implémentation originale des FArray*)
 
 (* comparaison d'une liste a toutes les autres d'un FArray*)
-let rec compare_list_FA (Card.card list:l) (Card.card list FArray:fa) =
+let rec compare_list_FA (l) (fa) =
     match fa with
     | Leaf x -> List.compare (Card.compare) l x
     | Node(left, right) -> (compare_list_FA l left) + (compare_list_FA l right)
@@ -136,26 +134,24 @@ let rec compare_list_FA (Card.card list:l) (Card.card list FArray:fa) =
 (*comparaison de toutes les listes d'un FArray avec toutes les listes d'un autre
 comparaison de toutes les listes à toutes les listes -> donc pour colA et colB on vérifie 1a = 1b, 1a = 2b, ..., 2a = 1b, 2a = 2b, ...  etc
 *)
-let rec compare_cols (Card.card list FArray:fa1) (Card.card list FArray:fa2) =
+let rec compare_cols (fa1) (fa2) =
   match fa1 with
   | Leaf x ->
     if (compare_list_FA x fa2) = ((length fa2) - 1) then 0 (* une seule colonne est = 0 parmi les n comparées -> -1 pour celle = 0 *)
     else 1
   | Node (l, r) -> compare_cols l fa2 + compare r fa2
-  | _ -> 1
 
-let rec compare_card_FA (Card.card option:x) ((Card.card option) FArray.t:fa2) =
+let rec compare_card_FA (x) (fa2) =
     match fa2 with
     | Leaf y -> Card.compare_option x y
     | Node(l, r) -> (compare_card_FA x l) + (compare_card_FA x r)
 
-let rec compare_card ((Card.card option) FArray.t:fa1) ((Card.card option) FArray.t:fa2) =
+let rec compare_card (fa1) (fa2) =
     match fa1 with
     | Leaf x ->
         if (compare_card_FA x fa2) < (length fa2) then 0  (*il ne peut y avoir qu'une carte par registre, et elles sont toutes differentes, donc tant que res < len(fa2) -> il y a au moins UNE carte pareille *)
         else 1
     | Node (l, r) -> compare_card l fa2 + compare_card r fa2
-    | _ -> 1
 
 (*
 comparaison colonne par colonne -> donc pour colA et colB on vérifie 1a = 1b, 2a = 2b etc etc
