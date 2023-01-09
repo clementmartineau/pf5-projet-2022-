@@ -25,3 +25,7 @@ type suitnum = int (* 0..3 *)
 
 val num_of_suit : suit -> suitnum
 val suit_of_num : suitnum -> suit
+val compare : a' -> a' -> int
+val compare_option : option a' -> option a' -> int
+
+

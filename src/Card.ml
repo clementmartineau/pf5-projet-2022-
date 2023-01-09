@@ -48,3 +48,17 @@ let rank_to_string = function
 
 let to_string (rk,s) = rank_to_string rk ^ suit_to_string s
 
+(* fonction de comparaison pour 2 Card *)
+(* égalité -> 0, sinon 1 *)
+let compare c1 c2 =
+    match c1,c2 with
+    | (r1,s1),(r2,s2) ->
+        if r1 == r2 && s1 == s2 then 0
+        else 1
+    | _ -> 1
+
+let compare_option oc1 oc2 =
+    match oc1,oc2 with
+    | Some(c1),Some(c2) -> compare c1 c2
+    | None, None -> 0
+    | _ -> 1

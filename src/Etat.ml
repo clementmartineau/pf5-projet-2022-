@@ -93,3 +93,25 @@ let c = colonnes_init game p in {depot = depot_init ; colonnes = fst c; registre
 
 let etat_to_string etat = 
     depot_to_string etat.depot ^ colonnes_to_string etat.colonnes ^ registres_to_string etat.registres
+
+
+
+(* test d'égalité registre. Si = -> 0 sinon -> 1 *)
+let compare_registres registre1 registre2 =
+    match registre1, registre2 with
+    | Some(r1),Some(r2) -> FArray.compare_card r1 r2
+    | None,None -> 0
+    | _ -> 1
+
+(* pour comparer les colonnes (contenant des FArray), on a implémenté une fonction compare *)
+(* test d'égalité colonnes. Si = -> 0 sinon -> 1 *)
+let compare_colonnes cols1 cols2 =
+    FArray.compare_cols cols1 cols2
+
+(* test d'égalité etats. Si = -> 0 sinon -> 1 *)
+let compare_etat etat1 etat2 =
+    if compare_registres etat1.registres etat2.registres <> 0 then 1
+    else compare_colonnes etat1.colonnes etat2.colonnes
+
+
+module Etats = Set.Make (struct type t = etat let compare = compare_etat end)
