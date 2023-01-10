@@ -190,8 +190,8 @@ let coup_valide etat coup game =
 let coup_to_string coup =
     let (d,c) = coup in
     match c with
-    | Carte(x) -> Card.to_string d ^ " " ^ Card.to_string x
-    | PlaceVide(x) -> Card.to_string d ^ " " ^ x
+    | Carte(x) -> string_of_int (Card.to_num d) ^ " " ^ string_of_int (Card.to_num x) ^ "\n"
+    | PlaceVide(x) -> string_of_int (Card.to_num d) ^ " " ^ x ^ "\n"
     | _ -> failwith "Coup invalide"
 
 (* "jouer_coup" renvoie l'etat apres l'execution d'un coup *)
