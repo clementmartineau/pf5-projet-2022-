@@ -81,6 +81,7 @@ let treat_game conf =
         else (print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n"); exit 1));
 
     | Search(filename) ->
+        if filename = "" then exit 0;
         let (solution,printSortie) = XpatSearch.get_solution etat game in
             if printSortie = "SUCCES" then
                 (write_to_file filename solution;

@@ -143,8 +143,7 @@ renvoie f1 et f2 apres n tirage(s).
 let rec tirageDeFifo f1 f2 n =
     if n = 0 then f1, f2
     else let (_,f1,f2) = tirage f1 f2
-    in Printf.printf "tirage n° %d" n;
-    tirageDeFifo f1 f2 (n - 1)
+    in tirageDeFifo f1 f2 (n - 1)
 
 (*
 e) La fonction de tirage vue précédemment produit un entier dans

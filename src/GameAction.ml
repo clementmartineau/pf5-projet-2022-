@@ -11,7 +11,7 @@ type coup = card * arrivee
 (* "depart" permet de convertir une string en carte *)
 let depart mot = of_num (int_of_string mot)
 
-(* "depart" permet de convertir une string en "arrivee" donc soit une carte soit un string *)
+(* "arrivee" permet de convertir une string en "arrivee" donc soit une carte soit un string *)
 let arrivee mot =
     if mot = "V" || mot = "T" then PlaceVide(mot) 
     else Carte(of_num (int_of_string mot))
@@ -187,6 +187,7 @@ let coup_valide etat coup game =
     | _ -> false
     in a && (est_dans_colonnes etat.colonnes depart <> (-1) || est_dans_registres etat.registres depart <> (-1))
 
+(* "coup_to_string" permet de transformer un coup en string sous le format des fichiers de solution *)
 let coup_to_string coup =
     let (d,c) = coup in
     match c with
