@@ -15,3 +15,4 @@ val normalisation : Etat.etat -> Etat.etat
 val jouer_coup : Etat.etat -> coup -> Etat.etat
 val jeu : Etat.etat -> coup -> Etat.etat
 val check : Etat.etat -> string -> coup list -> int -> (Etat.etat * int)
+

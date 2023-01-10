@@ -114,4 +114,4 @@ let compare_etat etat1 etat2 =
     else compare_colonnes etat1.colonnes etat2.colonnes
 
 
-module Etats = Set.Make (struct type t = etat let compare = compare_etat end)
+

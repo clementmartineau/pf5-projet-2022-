@@ -1,5 +1,6 @@
 open Card
 open Etat
+
 type pos =
 | Reg of Etat.registres
 | Col of Etat.colonnes
