@@ -122,6 +122,15 @@ let compare_colonnes cols1 cols2 =
     FArray.compare_cols cols1 cols2
 
 (* comparaison entre états *)
+
+(*
+let compare_etat etat1 etat2 =
+  let res = Stdlib.compare etat1.registres etat2.registres in
+  if (res = 0) then Stdlib.compare etat1.colonnes etat2.colonnes else comp
+  *)
+
+
+
 let compare_etat etat1 etat2 =
     (* On commence par vérifier l'égalité au score *)
     if get_score etat1 > get_score etat2 then 1

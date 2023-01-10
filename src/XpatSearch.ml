@@ -117,7 +117,8 @@ let get_meilleure_branche a_visiter =
 let rec parcours a_visiter deja_traites game =
     let etat = get_meilleure_branche a_visiter in (* on récupère le meilleur état*)
     if get_score etat = 52 then (* si le score est de 52, alors SUCCES*)
-            (a_visiter, deja_traites, 0, etat)
+            (print_string (Etat.etat_to_string etat);
+            (a_visiter, deja_traites, 0, etat))
     else
         let a_visiter = Etats.remove etat a_visiter in (* on le supprime de a_visiter*)
         let deja_traites = Etats.add etat deja_traites in (* on l'ajoute dans deja_traites*)
