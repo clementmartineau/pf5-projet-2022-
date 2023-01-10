@@ -125,7 +125,7 @@ let compare_colonnes cols1 cols2 =
 let compare_etat etat1 etat2 =
     (* On commence par vérifier l'égalité au score *)
     if get_score etat1 > get_score etat2 then 1
-    else if get_score etat1 < etat2 then -1
+    else if get_score etat1 < get_score etat2 then -1
     (* si score = on vérifie l'égalité parfaite *)
     else if compare_registres etat1.registres etat2.registres = 0 && compare_colonnes etat1.colonnes etat2.colonnes = 0 then 0
     (* si pas égalité parfaite on compare les dépots *)

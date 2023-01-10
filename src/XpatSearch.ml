@@ -1,37 +1,51 @@
 open Etat
+open GameAction
 module Etats = Set.Make (struct type t = Etat.etat let compare = Etat.compare_etat end)
 
 
 let coup_col_to_reg n i a_visiter etat game = (* ajouter la carte du haut de la col n au registre i si possible *)
-    let coup = (* coup *) in
+    let coup = let col = FArray.get etat.colonnes n in
+        if col = [] then (Card.of_num (-1), PlaceVide("T"))
+        else (List.hd col, PlaceVide("T"))
+    in
     if GameAction.coup_valide etat coup game then (* si coup valide *)
-        let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
-        new_etat = GameAction.normalisation new_etat in
+        let new_etat = GameAction.jouer_coup etat coup |> GameAction.normalisation in (* on créer l'état *)
         Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
     else a_visiter
 
 let coup_col_to_col n i a_visiter etat game = (* ajouter la carte du haut de la col n a la col i si possible *)
     if i = n then a_visiter (* si col n = col i -> return *)
     else
-        let coup = (* coup *) in
+        let coup =
+            let col1 = FArray.get etat.colonnes n and col2 = FArray.get etat.colonnes i in
+            if col1 = [] then (Card.of_num (-1), PlaceVide("T"))
+            else 
+                if col2 = [] then (List.hd col1, PlaceVide("V")) 
+                else (List.hd col1, Carte(List.hd col1))
+        in
         if GameAction.coup_valide etat coup game then (* si coup valide *)
-            let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
-            new_etat = GameAction.normalisation new_etat in
+            let new_etat = GameAction.jouer_coup etat coup |> GameAction.normalisation in (* on créer l'état *)
             Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
         else a_visiter
 
 let coup_reg_to_col n i a_visiter etat game = (* ajouter la carte du reg n a la col i si possible *)
-        let coup = (* coup *) in
+        let coup = 
+            let reg = etat.registres in
+            if reg = None then (Card.of_num (-1), PlaceVide("T"))
+            else 
+                let col = FArray.get etat.colonnes i in
+                if col = [] then (Card.of_num (-1), PlaceVide("T"))
+                else (List.hd col, PlaceVide("V"))
+        in
         if GameAction.coup_valide etat coup game then (* si coup valide *)
-            let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
-            new_etat = GameAction.normalisation new_etat in
+            let new_etat = GameAction.jouer_coup etat coup |>  GameAction.normalisation in (* on créer l'état *)
             Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
         else a_visiter
 
 
-let rec ajouter_coups_depuis_col_aux n a_visiter etat game = (* on ajoute tous les coups depuis une colonne*)
+let ajouter_coups_depuis_col_aux n a_visiter etat game = (* on ajoute tous les coups depuis une colonne*)
     let rec aux_col_reg n i a_visiter etat game= (* ajout carte col n dans reg i*)
-        if i = FArray.length etat.registres then a_visiter (* apres avoir visité tous les reg, on return*)
+        if etat.registres  = None || i = FArray.length (Option.get etat.registres) then a_visiter (* apres avoir visité tous les reg, on return*)
         else
             let a_visiter = coup_col_to_reg n i a_visiter etat game (* on ajoute le coup col n au reg i *)
             in aux_col_reg n (i + 1) a_visiter etat game (* on fait l'appel suivant avec col n et reg i + 1*)
@@ -45,7 +59,7 @@ let rec ajouter_coups_depuis_col_aux n a_visiter etat game = (* on ajoute tous l
 
 
 
-let rec ajouter_coups_depuis_reg_aux n a_visiter etat game = (* on ajoute tous les coups depuis un registre*)
+let ajouter_coups_depuis_reg_aux n a_visiter etat game = (* on ajoute tous les coups depuis un registre*)
     let rec aux_reg_col n i a_visiter etat game = (* ajout carte col n dans col i*)
         if i = FArray.length etat.colonnes then a_visiter (* apres avoir visité toutes les col on return *)
         else
@@ -70,7 +84,7 @@ let ajouter_tous_coups a_visiter etat game =
             in ajouter_coups_depuis_col (n + 1) a_visiter etat game
     in let a_visiter = ajouter_coups_depuis_col 0 a_visiter etat game in
     let rec ajouter_coups_depuis_reg n a_visiter etat game =
-        if n = FArray.length etat.registres then a_visiter
+        if etat.registres =  None || n = FArray.length (Option.get etat.registres) then a_visiter
         else
             let a_visiter = ajouter_coups_depuis_reg_aux n a_visiter etat game
             in ajouter_coups_depuis_reg (n + 1) a_visiter etat game
