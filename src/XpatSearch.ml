@@ -21,7 +21,7 @@ let coup_col_to_col n i a_visiter etat game = (* ajouter la carte du haut de la 
             if col1 = [] then (Card.of_num (-1), PlaceVide("T"))
             else 
                 if col2 = [] then (List.hd col1, PlaceVide("V")) 
-                else (List.hd col1, Carte(List.hd col1))
+                else (List.hd col1, Carte(List.hd col2))
         in
         if GameAction.coup_valide etat coup game then (* si coup valide *)
             let new_etat = GameAction.jouer_coup etat coup |> GameAction.normalisation in (* on créer l'état *)
@@ -32,10 +32,13 @@ let coup_reg_to_col n i a_visiter etat game = (* ajouter la carte du reg n a la 
         let coup = 
             let reg = etat.registres in
             if reg = None then (Card.of_num (-1), PlaceVide("T"))
-            else 
-                let col = FArray.get etat.colonnes i in
-                if col = [] then (Card.of_num (-1), PlaceVide("T"))
-                else (List.hd col, PlaceVide("V"))
+            else
+                let carte = FArray.get (Option.get reg) n in
+                if carte = None then (Card.of_num (-1), PlaceVide("T"))
+                else 
+                    let col = FArray.get etat.colonnes i in
+                    if col = [] then ( Option.get carte , PlaceVide("V"))
+                    else ( Option.get carte , Carte(List.hd col))
         in
         if GameAction.coup_valide etat coup game then (* si coup valide *)
             let new_etat = GameAction.jouer_coup etat coup |>  GameAction.normalisation in (* on créer l'état *)

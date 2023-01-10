@@ -80,25 +80,25 @@ let treat_game conf =
   
     match config.mode with
     | Check(filename) ->
-        let new_etat =
+        (let new_etat =
           let lines = lines_of_file (filename) in
           (GameAction.check etat game (GameAction.creer_coups lines) 1) in
 
         print_string ("\nAprès exécution des coups : \n" ^ Etat.etat_to_string (fst new_etat));
 
         if snd new_etat = 0 then (print_string "\nSUCCES\n"; exit 0)
-        else (print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n"); exit 1);
+        else (print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n"); exit 1));
 
     | Search(filename) ->
         let (solution,printSortie) = XpatSearch.get_solution etat game in
             if printSortie = "SUCCES" then
-                write_to_file filename solution;
-                print_string "\nSUCCES\n";
+                (write_to_file filename solution;
+                print_string "\nSUCCES\n")
 
-            if printSortie = "ECHEC" then
+            else if printSortie = "ECHEC" then
                 (print_string "\nEHEC\n";
-                exit 2);
-            if printSortie = "INSOLUBLE" then
+                exit 2)
+            else if printSortie = "INSOLUBLE" then
                 (print_string "\nINSOLUBLE\n";
                 exit 1);
     exit 0
