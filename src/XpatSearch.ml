@@ -6,6 +6,7 @@ let coup_col_to_reg n i a_visiter etat game = (* ajouter la carte du haut de la 
     let coup = (* coup *) in
     if GameAction.coup_valide etat coup game then (* si coup valide *)
         let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
+        new_etat = GameAction.normalisation new_etat in
         Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
     else a_visiter
 
@@ -15,6 +16,7 @@ let coup_col_to_col n i a_visiter etat game = (* ajouter la carte du haut de la 
         let coup = (* coup *) in
         if GameAction.coup_valide etat coup game then (* si coup valide *)
             let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
+            new_etat = GameAction.normalisation new_etat in
             Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
         else a_visiter
 
@@ -22,6 +24,7 @@ let coup_reg_to_col n i a_visiter etat game = (* ajouter la carte du reg n a la 
         let coup = (* coup *) in
         if GameAction.coup_valide etat coup game then (* si coup valide *)
             let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
+            new_etat = GameAction.normalisation new_etat in
             Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
         else a_visiter
 
@@ -80,13 +83,9 @@ let getStringSortie i =
     else if i = 1 then "ECHEC"
     else "INSOLUBLE"
 
-(* renvoie le score d'un état *)
-let get_score etat =
-    etat.depot.trefle + etat.depot.coeur + etat.depot.pique + etat.depot.carreau
-
 (* renvoie l'état avec le meilleur score dans le Set *)
 let get_meilleure_branche a_visiter =
-    Etats.fold (fun x y -> if (get_score x) > (get_score y) then x else y) a_visiter (Etats.choose a_visiter)
+    Etats.fold (fun x y -> if (Etat.get_score x) > (Etat.get_score y) then x else y) a_visiter (Etats.choose a_visiter)
 
 (* Dans cette fonction on fait le parcours récursif dans l'arbre
     Il s'agit d'un parcours en profondeur car nous nous enfonçons dans une branche a chaque fois

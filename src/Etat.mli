@@ -6,4 +6,5 @@ type etat = {depot : depot; colonnes : colonnes; registres : registres; historiq
 val etat_make : depot -> colonnes -> registres -> etat
 val etat_init : string -> int list -> etat
 val etat_to_string : etat -> string
+val get_score : etat -> int
 val compare_etat : etat -> etat -> int

@@ -104,6 +104,11 @@ let etat_to_string etat =
     depot_to_string etat.depot ^ colonnes_to_string etat.colonnes ^ registres_to_string etat.registres
 
 
+(* renvoie le score d'un état *)
+let get_score etat =
+    etat.depot.trefle + etat.depot.coeur + etat.depot.pique + etat.depot.carreau
+
+
 (* test d'égalité registre. Si = -> 0 sinon -> 1 *)
 let compare_registres registre1 registre2 =
     match registre1, registre2 with
@@ -116,7 +121,14 @@ let compare_registres registre1 registre2 =
 let compare_colonnes cols1 cols2 =
     FArray.compare_cols cols1 cols2
 
-(* test d'égalité etats. Si = -> 0 sinon -> 1 *)
+(* comparaison entre états *)
 let compare_etat etat1 etat2 =
-    if compare_registres etat1.registres etat2.registres <> 0 then 1
-    else compare_colonnes etat1.colonnes etat2.colonnes
+    (* On commence par vérifier l'égalité au score *)
+    if get_score etat1 > get_score etat2 then 1
+    else if get_score etat1 < etat2 then -1
+    (* si score = on vérifie l'égalité parfaite *)
+    else if compare_registres etat1.registres etat2.registres = 0 && compare_colonnes etat1.colonnes etat2.colonnes = 0 then 0
+    (* si pas égalité parfaite on compare les dépots *)
+    else let c = Stdlib.compare etat1.registres etat2.registres in
+         if (c = 0) then Stdlib.compare etat1.colonnes etat2.colonnes
+         else c
