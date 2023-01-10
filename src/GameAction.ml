@@ -145,7 +145,7 @@ let normalisation_registres registres depot =
 let une_normalisation etat =
     let new_col = normalisation_colonnes etat.colonnes etat.depot in
     let new_reg = normalisation_registres etat.registres (snd new_col)
-    in etat_make (snd new_reg) (fst new_col) (fst new_reg)
+    in etat_make (snd new_reg) (fst new_col) (fst new_reg) (etat.historique)
 
 (* "normalisation" procède à la mise au dépot de tout le jeu jusqu'à que ce ne soit plus possible*)
 let rec normalisation etat =
@@ -185,6 +185,12 @@ let coup_valide etat coup game =
     | Carte(x) -> depart <> x && regles_colonne game (depart, x) && est_dans_colonnes etat.colonnes x <> (-1)
     in a && (est_dans_colonnes etat.colonnes depart <> (-1) || est_dans_registres etat.registres depart <> (-1))
 
+let coup_to_string coup =
+    let (d,c) = coup in
+    match c with
+    | Carte(x) -> Card.to_string d ^ " " ^ Card.to_string x
+    | PlaceVide(x) -> Card.to_string d ^ " " ^ x
+
 (* "jouer_coup" renvoie l'etat apres l'execution d'un coup *)
 let jouer_coup etat coup =
     let depart = fst coup and arrivee = snd coup in
@@ -194,17 +200,17 @@ let jouer_coup etat coup =
     let new_col = if i0 <> -1 then enleve_colonne etat.colonnes i0 else etat.colonnes
     and new_reg = if i1 <> -1 then enleve_registre etat.registres i1 else etat.registres in
     
-    let new_etat = etat_make etat.depot new_col new_reg in
+    let new_etat = etat_make etat.depot new_col new_reg (etat.historique @ [coup_to_string coup]) in
     
     match arrivee with
     | Carte(x) -> let new_col_2 = ajoute_colonne new_etat.colonnes depart x in
-                    etat_make etat.depot new_col_2 new_etat.registres
+                    etat_make etat.depot new_col_2 new_etat.registres new_etat.historique
     | PlaceVide(x) -> 
         match x with
         | "V" -> let new_col_2 = ajoute_colonne_vide new_etat.colonnes depart in
-                    etat_make etat.depot new_col_2 new_etat.registres
+                    etat_make etat.depot new_col_2 new_etat.registres new_etat.historique
         | "T" -> let new_reg_2 = ajoute_registre new_etat.registres depart in
-                    etat_make etat.depot new_etat.colonnes new_reg_2
+                    etat_make etat.depot new_etat.colonnes new_reg_2 new_etat.historique
         | _ -> failwith "Erreur de syntaxe des coups"
 
 (* "configuration_gagnante" renvoie true si la configuration de l'etat est gagnante *)

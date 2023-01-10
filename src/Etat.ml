@@ -93,7 +93,7 @@ let registres_to_string registres =
         in aux x 0
 
 (* "etat_make" creer un nouvel etat contenant le dépôt, les colonnes et les registres demandés *)
-let etat_make depot colonnes registres = {depot = depot; colonnes = colonnes; registres = registres; historique = []}
+let etat_make depot colonnes registres historique = {depot = depot; colonnes = colonnes; registres = registres; historique = historique}
 
 (* "etat_init" initialise un etat en fonction du jeu *)
 let etat_init game permut =
