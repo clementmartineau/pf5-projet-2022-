@@ -4,6 +4,7 @@ open Etat
 type arrivee =
 | Carte of card
 | PlaceVide of string
+| Vide of int
 
 type coup = card * arrivee
 
@@ -183,6 +184,7 @@ let coup_valide etat coup game =
             (x = "V" && regles_colonne_vide etat.colonnes game coup) || 
             (x = "T" && registre_vide etat.registres <> (-1))
     | Carte(x) -> depart <> x && regles_colonne game (depart, x) && est_dans_colonnes etat.colonnes x <> (-1)
+    | _ -> false
     in a && (est_dans_colonnes etat.colonnes depart <> (-1) || est_dans_registres etat.registres depart <> (-1))
 
 let coup_to_string coup =
@@ -190,6 +192,7 @@ let coup_to_string coup =
     match c with
     | Carte(x) -> Card.to_string d ^ " " ^ Card.to_string x
     | PlaceVide(x) -> Card.to_string d ^ " " ^ x
+    | _ -> failwith "Coup invalide"
 
 (* "jouer_coup" renvoie l'etat apres l'execution d'un coup *)
 let jouer_coup etat coup =
@@ -203,6 +206,7 @@ let jouer_coup etat coup =
     let new_etat = etat_make etat.depot new_col new_reg (etat.historique @ [coup_to_string coup]) in
     
     match arrivee with
+    | Vide(_) -> failwith "Coup invalide"
     | Carte(x) -> let new_col_2 = ajoute_colonne new_etat.colonnes depart x in
                     etat_make etat.depot new_col_2 new_etat.registres new_etat.historique
     | PlaceVide(x) -> 

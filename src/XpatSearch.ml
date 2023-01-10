@@ -5,7 +5,7 @@ module Etats = Set.Make (struct type t = Etat.etat let compare = Etat.compare_et
 
 let coup_col_to_reg n i a_visiter etat game = (* ajouter la carte du haut de la col n au registre i si possible *)
     let coup = let col = FArray.get etat.colonnes n in
-        if col = [] then (Card.of_num (-1), PlaceVide("T"))
+        if col = [] then (Card.of_num (-1), Vide(0))
         else (List.hd col, PlaceVide("T"))
     in
     if GameAction.coup_valide etat coup game then (* si coup valide *)
@@ -18,7 +18,7 @@ let coup_col_to_col n i a_visiter etat game = (* ajouter la carte du haut de la 
     else
         let coup =
             let col1 = FArray.get etat.colonnes n and col2 = FArray.get etat.colonnes i in
-            if col1 = [] then (Card.of_num (-1), PlaceVide("T"))
+            if col1 = [] then (Card.of_num (-1), Vide(0))
             else 
                 if col2 = [] then (List.hd col1, PlaceVide("V")) 
                 else (List.hd col1, Carte(List.hd col2))
@@ -31,10 +31,10 @@ let coup_col_to_col n i a_visiter etat game = (* ajouter la carte du haut de la 
 let coup_reg_to_col n i a_visiter etat game = (* ajouter la carte du reg n a la col i si possible *)
         let coup = 
             let reg = etat.registres in
-            if reg = None then (Card.of_num (-1), PlaceVide("T"))
+            if reg = None then (Card.of_num (-1), Vide(0))
             else
                 let carte = FArray.get (Option.get reg) n in
-                if carte = None then (Card.of_num (-1), PlaceVide("T"))
+                if carte = None then (Card.of_num (-1), Vide(0))
                 else 
                     let col = FArray.get etat.colonnes i in
                     if col = [] then ( Option.get carte , PlaceVide("V"))
@@ -118,7 +118,9 @@ let rec parcours a_visiter deja_traites game =
     else
         let a_visiter = Etats.remove etat a_visiter in (* on le supprime de a_visiter*)
         let deja_traites = Etats.add etat deja_traites in (* on l'ajoute dans deja_traites*)
-        let a_visiter = ajouter_tous_coups a_visiter etat game in (* on ajoute les états issus de tous les coups possibles depuis l'état courant*)
+        let a_visiter =
+            if( Etats.exists (fun x -> x = etat) deja_traites) then a_visiter
+            else ajouter_tous_coups a_visiter etat game in (* on ajoute les états issus de tous les coups possibles depuis l'état courant*)
                                                              (* ATTENTION : ajouter_tous_coups DOIT normaliser les états ajoutés dans à visiter*)
         if Etats.is_empty a_visiter then (a_visiter, deja_traites, 2, etat) (* si il n'y a rien a visiter, alors INSOLUBLE*)
         else parcours a_visiter deja_traites game(* on fait un appel récursif*)

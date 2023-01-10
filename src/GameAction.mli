@@ -1,6 +1,7 @@
 type arrivee =
 | Carte of Card.card
 | PlaceVide of string
+| Vide of int
 
 type coup = (Card.card * arrivee)
 
