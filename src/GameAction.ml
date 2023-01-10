@@ -221,4 +221,6 @@ let rec check etat game coups i =
     | coup :: t -> if coup_valide e coup game 
                    then check (jouer_coup e coup) game t (i+1)
                    else (e, i)
-   
+
+
+

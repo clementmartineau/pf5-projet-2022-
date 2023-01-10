@@ -2,7 +2,54 @@ open Etat
 module Etats = Set.Make (struct type t = Etat.etat let compare = Etat.compare_etat end)
 
 
+let coup_col_to_reg n i a_visiter etat game = (* ajouter la carte du haut de la col n au registre i si possible *)
+    let coup = (* coup *) in
+    if GameAction.coup_valide etat coup game then (* si coup valide *)
+        let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
+        Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
+    else a_visiter
 
+let coup_col_to_col n i a_visiter etat game = (* ajouter la carte du haut de la col n a la col i si possible *)
+    if i = n then a_visiter (* si col n = col i -> return *)
+    else
+        let coup = (* coup *) in
+        if GameAction.coup_valide etat coup game then (* si coup valide *)
+            let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
+            Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
+        else a_visiter
+
+let coup_reg_to_col n i a_visiter etat game = (* ajouter la carte du reg n a la col i si possible *)
+        let coup = (* coup *) in
+        if GameAction.coup_valide etat coup game then (* si coup valide *)
+            let new_etat = GameAction.jouer_coup etat coup in (* on créer l'état *)
+            Etats.add new_etat a_visiter (* on l'ajoute et on renvoie*)
+        else a_visiter
+
+
+let rec ajouter_coups_depuis_col_aux n a_visiter etat game = (* on ajoute tous les coups depuis une colonne*)
+    let rec aux_col_reg n i a_visiter etat game= (* ajout carte col n dans reg i*)
+        if i = FArray.length etat.registres then a_visiter (* apres avoir visité tous les reg, on return*)
+        else
+            let a_visiter = coup_col_to_reg n i a_visiter etat game (* on ajoute le coup col n au reg i *)
+            in aux_col_reg n (i + 1) a_visiter etat game (* on fait l'appel suivant avec col n et reg i + 1*)
+    in let rec aux_col_col n i a_visiter etat game = (* ajout carte col n dans col i*)
+        if i = FArray.length etat.colonnes then a_visiter (* apres avoir visité toutes les col on return *)
+        else
+            let a_visiter = coup_col_to_col n i a_visiter etat game (* on ajoute le coup col n to col i*)
+            in aux_col_col n (i + 1) a_visiter etat game (* on fait l'appel suivant avec col n et col i + 1 *)
+    in let a_visiter = aux_col_col n 0 a_visiter etat game
+    in aux_col_reg n 0 a_visiter etat game
+
+
+
+let rec ajouter_coups_depuis_reg_aux n a_visiter etat game = (* on ajoute tous les coups depuis un registre*)
+    let rec aux_reg_col n i a_visiter etat game = (* ajout carte col n dans col i*)
+        if i = FArray.length etat.colonnes then a_visiter (* apres avoir visité toutes les col on return *)
+        else
+            let a_visiter = coup_reg_to_col n i a_visiter etat game (* on ajoute le coup reg n to col i*)
+            in aux_reg_col n (i + 1) a_visiter etat game (* on fait l'appel suivant avec reg n et col i + 1 *)
+
+    in aux_reg_col n 0 a_visiter etat game
 (*
 Fonction qui depuis un etat, ajoute tous les états résultants de tous les coups possibles a un Set a_visiter.
 Les états ajoutés doivent être normalisés
@@ -12,8 +59,21 @@ return a_visiter
 pour ajouter un etat faire Etats.add a_visiter etat_du_coup
 (je sais pas si ça marche parce que c'est pas le bon document, peut-etre open XpatSearch?)
 *)
-let ajouter_tous_coups a_visiter etat =
-    a_visiter
+let ajouter_tous_coups a_visiter etat game =
+    let rec ajouter_coups_depuis_col n a_visiter etat game = (* Parcours des 8 colonnes *)
+        if n = FArray.length etat.colonnes then a_visiter
+        else
+            let a_visiter = ajouter_coups_depuis_col_aux n a_visiter etat game
+            in ajouter_coups_depuis_col (n + 1) a_visiter etat game
+    in let a_visiter = ajouter_coups_depuis_col 0 a_visiter etat game in
+    let rec ajouter_coups_depuis_reg n a_visiter etat game =
+        if n = FArray.length etat.registres then a_visiter
+        else
+            let a_visiter = ajouter_coups_depuis_reg_aux n a_visiter etat game
+            in ajouter_coups_depuis_reg (n + 1) a_visiter etat game
+    in let a_visiter = ajouter_coups_depuis_col 0 a_visiter etat game
+    in ajouter_coups_depuis_reg 0 a_visiter etat game
+
 
 let getStringSortie i =
     if i = 0 then "SUCCES"
@@ -35,25 +95,23 @@ let get_meilleure_branche a_visiter =
     Il s'agit de l'algorithme du plus court chemin de Djikstra
     (ou on veut l'état au plus gros score au lieu du voisin le plus proche à chaque itération)
 *)
-let rec parcours a_visiter deja_traites =
-    let e = get_meilleure_branche a_visiter in
-    let etat = Etats.singleton e in (* on récupère le meilleur état*)
-    if get_score e = 52 then (* si le score est de 52, alors SUCCES*)
+let rec parcours a_visiter deja_traites game =
+    let etat = get_meilleure_branche a_visiter in (* on récupère le meilleur état*)
+    if get_score etat = 52 then (* si le score est de 52, alors SUCCES*)
             (a_visiter, deja_traites, 0, etat)
     else
-        let a_visiter_bis = Etats.remove e a_visiter in (* on le supprime de a_visiter*)
-        let deja_traites_bis = Etats.add e deja_traites in (* on l'ajoute dans deja_traites*)
-        let a_visiter_ter = ajouter_tous_coups a_visiter_bis etat in (* on ajoute les états issus de tous les coups possibles depuis l'état courant*)
+        let a_visiter = Etats.remove etat a_visiter in (* on le supprime de a_visiter*)
+        let deja_traites = Etats.add etat deja_traites in (* on l'ajoute dans deja_traites*)
+        let a_visiter = ajouter_tous_coups a_visiter etat game in (* on ajoute les états issus de tous les coups possibles depuis l'état courant*)
                                                              (* ATTENTION : ajouter_tous_coups DOIT normaliser les états ajoutés dans à visiter*)
-        if Etats.is_empty a_visiter then (a_visiter_ter, deja_traites_bis, 2, etat) (* si il n'y a rien a visiter, alors INSOLUBLE*)
-        else parcours a_visiter_ter deja_traites_bis (* on fait un appel récursif*)
-
+        if Etats.is_empty a_visiter then (a_visiter, deja_traites, 2, etat) (* si il n'y a rien a visiter, alors INSOLUBLE*)
+        else parcours a_visiter deja_traites game(* on fait un appel récursif*)
 
 
 (* fonction qui renvoie la solution sous forme de couple d'un string list et d'un string représentant la sortie obtenue *)
-let get_solution etat =
+let get_solution etat game =
     let etat = GameAction.normalisation etat in (* on normalise l'état initial*)
     let a_visiter = Etats.singleton etat in (* on initialise les états a_visiter*)
     let deja_traites = Etats.empty in (* on initialise les états deja_traites*)
-    match (parcours a_visiter deja_traites)  with (* on effectue le parcours et on renvoie le résultat voulu*)
-    | (_,_,i,etat_sortie) -> ((Etats.choose etat_sortie).historique, (getStringSortie i)) (* on renvoie un couple constitué de l'historique des coups et du string de sortie *)
+    let (_,_,i,etat_sortie) = (parcours a_visiter deja_traites game) (* on effectue le parcours et on renvoie le résultat voulu*)
+    in (etat_sortie.historique, (getStringSortie i)) (* on renvoie un couple constitué de l'historique des coups et du string de sortie *)
