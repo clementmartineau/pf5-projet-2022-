@@ -73,15 +73,8 @@ let ajouter_coups_depuis_reg_aux n a_visiter etat game deja_traites = (* on ajou
             in aux_reg_col n (i + 1) a_visiter etat game deja_traites (* on fait l'appel suivant avec reg n et col i + 1 *)
 
     in aux_reg_col n 0 a_visiter etat game deja_traites
-(*
-Fonction qui depuis un etat, ajoute tous les états résultants de tous les coups possibles a un Set a_visiter.
-Les états ajoutés doivent être normalisés
 
-return a_visiter
-
-pour ajouter un etat faire Etats.add a_visiter etat_du_coup
-(je sais pas si ça marche parce que c'est pas le bon document, peut-etre open XpatSearch?)
-*)
+(* Fonction qui depuis un etat, ajoute tous les états résultants de tous les coups possibles a un Set a_visiter. *)
 let ajouter_tous_coups a_visiter etat game deja_traites =
     let rec ajouter_coups_depuis_col n a_visiter etat game deja_traites = (* Parcours des 8 colonnes *)
         if n = FArray.length etat.colonnes then a_visiter
@@ -117,8 +110,7 @@ let get_meilleure_branche a_visiter =
 let rec parcours a_visiter deja_traites game =
     let etat = get_meilleure_branche a_visiter in (* on récupère le meilleur état*)
     if get_score etat = 52 then (* si le score est de 52, alors SUCCES*)
-            (print_string (Etat.etat_to_string etat);
-            (a_visiter, deja_traites, 0, etat))
+            (a_visiter, deja_traites, 0, etat)
     else
         let a_visiter = Etats.remove etat a_visiter in (* on le supprime de a_visiter*)
         let deja_traites = Etats.add etat deja_traites in (* on l'ajoute dans deja_traites*)
@@ -126,7 +118,6 @@ let rec parcours a_visiter deja_traites game =
                                                              (* ATTENTION : ajouter_tous_coups DOIT normaliser les états ajoutés dans à visiter*)
         if Etats.is_empty a_visiter then (a_visiter, deja_traites, 2, etat) (* si il n'y a rien a visiter, alors INSOLUBLE*)
         else parcours a_visiter deja_traites game(* on fait un appel récursif*)
-
 
 (* fonction qui renvoie la solution sous forme de couple d'un string list et d'un string représentant la sortie obtenue *)
 let get_solution etat game =

@@ -10,7 +10,7 @@
 
 type 'a t = 'a list (* head of list = first out *)
 let empty = []
-let push x q = List.rev (x :: List.rev q)
+let push x q = List.rev (x :: List.rev q) (* implementation sans @ *)
 let pop q = match q with x::q' -> x, q' | [] -> raise Not_found
 let of_list l = List.rev l
 let to_list l = l

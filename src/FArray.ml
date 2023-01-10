@@ -141,24 +141,16 @@ let rec compare_cols (fa1) (fa2) =
     else 1
   | Node (l, r) -> compare_cols l fa2 + compare r fa2
 
+(* Comparaison d'une carte avec toutes les cartes d'un FArray *)
 let rec compare_card_FA (x) (fa2) =
     match fa2 with
     | Leaf y -> Card.compare_option x y
     | Node(l, r) -> (compare_card_FA x l) + (compare_card_FA x r)
 
+(* Comparaison de 2 Farray contenant des option Card*)
 let rec compare_card (fa1) (fa2) =
     match fa1 with
     | Leaf x ->
         if (compare_card_FA x fa2) < (length fa2) then 0  (*il ne peut y avoir qu'une carte par registre, et elles sont toutes differentes, donc tant que res < len(fa2) -> il y a au moins UNE carte pareille *)
         else 1
     | Node (l, r) -> compare_card l fa2 + compare_card r fa2
-
-(*
-comparaison colonne par colonne -> donc pour colA et colB on vérifie 1a = 1b, 2a = 2b etc etc
-
-let rec compare (fa1:(Card.card list) FArray) (fa2:(Card.card list) FArray) =
-  match fa1, fa2 with
-  | Leaf x, Leaf y -> List.compare (Card.compare) x y
-  | Node (l1, r1), Node (l2, r2) -> compare l1 l2 + compare r1 r2
-  | _ -> 1
-*)
