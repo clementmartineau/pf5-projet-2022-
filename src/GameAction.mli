@@ -1,18 +1,12 @@
-type pos =
-| Reg of Etat.registres
-| Col of Etat.colonnes
-
 type arrivee =
 | Carte of Card.card
 | PlaceVide of string
 
-(* type coup = {pos1 : pos ; pos2 : pos; num : int } *)
 type coup = (Card.card * arrivee)
 
-val creer_coup : string list -> coup list
 val coup_valide : Etat.etat -> coup -> string -> bool
-val normalisation : Etat.etat -> Etat.etat
+val creer_coups : string list -> coup list
 val jouer_coup : Etat.etat -> coup -> Etat.etat
-val jeu : Etat.etat -> coup -> Etat.etat
-val check : Etat.etat -> string -> coup list -> int -> (Etat.etat * int)
-
+val normalisation : Etat.etat -> Etat.etat
+val configuration_gagnante : Etat.etat -> bool
+val check : Etat.etat -> string -> coup list -> int -> Etat.etat * int

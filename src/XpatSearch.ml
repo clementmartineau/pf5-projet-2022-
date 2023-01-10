@@ -1,3 +1,4 @@
+open Etat
 module Etats = Set.Make (struct type t = Etat.etat let compare = Etat.compare_etat end)
 
 
@@ -13,8 +14,6 @@ pour ajouter un etat faire Etats.add a_visiter etat_du_coup
 *)
 let ajouter_tous_coups a_visiter etat =
     a_visiter
-
-
 
 let getStringSortie i =
     if i = 0 then "SUCCES"
@@ -37,16 +36,17 @@ let get_meilleure_branche a_visiter =
     (ou on veut l'état au plus gros score au lieu du voisin le plus proche à chaque itération)
 *)
 let rec parcours a_visiter deja_traites =
-    let etat = get_meilleure_branche a_visiter in (* on récupère le meilleur état*)
-    if get_score etat = 52 then (* si le score est de 52, alors SUCCES*)
+    let e = get_meilleure_branche a_visiter in
+    let etat = Etats.singleton e in (* on récupère le meilleur état*)
+    if get_score e = 52 then (* si le score est de 52, alors SUCCES*)
             (a_visiter, deja_traites, 0, etat)
     else
-        let a_visiter = Etats.remove etat a_visiter in (* on le supprime de a_visiter*)
-        let deja_traites = Etats.add deja_traites etat in (* on l'ajoute dans deja_traites*)
-        let a_visiter = ajouter_tous_coups a_visiter etat in (* on ajoute les états issus de tous les coups possibles depuis l'état courant*)
+        let a_visiter_bis = Etats.remove e a_visiter in (* on le supprime de a_visiter*)
+        let deja_traites_bis = Etats.add e deja_traites in (* on l'ajoute dans deja_traites*)
+        let a_visiter_ter = ajouter_tous_coups a_visiter_bis etat in (* on ajoute les états issus de tous les coups possibles depuis l'état courant*)
                                                              (* ATTENTION : ajouter_tous_coups DOIT normaliser les états ajoutés dans à visiter*)
-        if Etats.is_empty a_visiter then (a_visiter, deja_traites, 2, etat) (* si il n'y a rien a visiter, alors INSOLUBLE*)
-        else parcours a_visiter deja_traites (* on fait un appel récursif*)
+        if Etats.is_empty a_visiter then (a_visiter_ter, deja_traites_bis, 2, etat) (* si il n'y a rien a visiter, alors INSOLUBLE*)
+        else parcours a_visiter_ter deja_traites_bis (* on fait un appel récursif*)
 
 
 
@@ -56,4 +56,4 @@ let get_solution etat =
     let a_visiter = Etats.singleton etat in (* on initialise les états a_visiter*)
     let deja_traites = Etats.empty in (* on initialise les états deja_traites*)
     match (parcours a_visiter deja_traites)  with (* on effectue le parcours et on renvoie le résultat voulu*)
-    | (_,_,i,etat_sortie) -> (etat_sortie.historique, (getStringSortie i)) (* on renvoie un couple constitué de l'historique des coups et du string de sortie *)
+    | (_,_,i,etat_sortie) -> ((Etats.choose etat_sortie).historique, (getStringSortie i)) (* on renvoie un couple constitué de l'historique des coups et du string de sortie *)

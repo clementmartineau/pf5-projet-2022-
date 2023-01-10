@@ -1,1 +1,1 @@
-val get_solution : Etat.etat -> (string list, string)
+val get_solution : Etat.etat -> (string list * string)

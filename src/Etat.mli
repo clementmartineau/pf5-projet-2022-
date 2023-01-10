@@ -1,7 +1,7 @@
 type depot = {trefle : int; pique : int; coeur : int; carreau : int}
 type colonnes = (Card.card list) FArray.t
 type registres = ((Card.card option) FArray.t) option
-type etat = {depot : depot; colonnes : colonnes; registres : registres}
+type etat = {depot : depot; colonnes : colonnes; registres : registres; historique : string list}
 
 val etat_make : depot -> colonnes -> registres -> etat
 val etat_init : string -> int list -> etat

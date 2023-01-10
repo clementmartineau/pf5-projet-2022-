@@ -79,36 +79,28 @@ let treat_game conf =
     print_string (Etat.etat_to_string etat);
   
     match config.mode with
-    | Check(x) ->
+    | Check(filename) ->
         let new_etat =
-        let filename = x in
-        let lines = lines_of_file (filename) in
-        let coups = (GameAction.creer_coup lines) in
-        (GameAction.check etat game coups 1) in
-        if snd new_etat = -1 then exit 0;
+          let lines = lines_of_file (filename) in
+          (GameAction.check etat game (GameAction.creer_coups lines) 1) in
 
-        print_string ("\nAprès exécution des coups : \n");
-        print_string (Etat.etat_to_string (fst new_etat));
+        print_string ("\nAprès exécution des coups : \n" ^ Etat.etat_to_string (fst new_etat));
 
-        if snd new_etat = 0 then print_string "\nSUCCES\n";
-        if snd new_etat = 0 then exit 0;
+        if snd new_etat = 0 then (print_string "\nSUCCES\n"; exit 0)
+        else (print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n"); exit 1);
 
-        if snd new_etat <> 0 then print_string ("\nECHEC " ^ string_of_int (snd new_etat) ^ "\n");
-        exit 1
-
-    | Search(x) ->
+    | Search(filename) ->
         let (solution,printSortie) = XpatSearch.get_solution etat in
             if printSortie = "SUCCES" then
-                let filename = x in
                 write_to_file filename solution;
                 print_string "\nSUCCES\n";
 
             if printSortie = "ECHEC" then
-                print_string "\nEHEC\n";
-                exit 2;
+                (print_string "\nEHEC\n";
+                exit 2);
             if printSortie = "INSOLUBLE" then
-                print_string "\nINSOLUBLE\n";
-                exit 1;
+                (print_string "\nINSOLUBLE\n";
+                exit 1);
     exit 0
 
 

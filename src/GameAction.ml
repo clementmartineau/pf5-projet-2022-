@@ -1,37 +1,38 @@
 open Card
 open Etat
 
-type pos =
-| Reg of Etat.registres
-| Col of Etat.colonnes
-
 type arrivee =
-| Carte of Card.card
+| Carte of card
 | PlaceVide of string
 
-(* type coup = {pos1 : pos ; pos2 : pos; num : int } *)
-type coup = (Card.card * arrivee)
+type coup = card * arrivee
 
-let depart s = Card.of_num (int_of_string s)
+(* "depart" permet de convertir une string en carte *)
+let depart mot = of_num (int_of_string mot)
 
-let arrivee s =
-    if s = "V" || s = "T" then PlaceVide(s) 
-    else Carte(Card.of_num (int_of_string s))
+(* "depart" permet de convertir une string en "arrivee" donc soit une carte soit un string *)
+let arrivee mot =
+    if mot = "V" || mot = "T" then PlaceVide(mot) 
+    else Carte(of_num (int_of_string mot))
 
-let creer_un_coup s =
-    let tab = String.split_on_char ' ' s in
+(* "creer_un_coup" permet de convertir une ligne du fichier solution en un coup *)
+let creer_un_coup ligne =
+    let tab = String.split_on_char ' ' ligne in
     match tab with
-    | x :: y :: t -> (depart x, arrivee y)
-    | _ -> failwith "Error"
+    | mot1 :: mot2 :: t -> (depart mot1, arrivee mot2)
+    | _ -> failwith "Erreur de syntaxe des coups"
 
-let rec creer_coup tab =
-    match tab with
+(* "creer_coups" permet de convertir toutes les lignes du fichier solution en une liste de coups *)
+let rec creer_coups lignes =
+    match lignes with
     | [] -> []
-    | h :: t -> creer_un_coup h :: creer_coup t 
+    | h :: t -> creer_un_coup h :: creer_coups t 
 
+(* "est_dans_une_colonne" renvoie true si la carte demandée est au sommet de la colonne *)
 let est_dans_une_colonne colonne card =
     if colonne = [] then false else List.hd colonne = card
 
+(* "est_dans_colonnes" renvoie true si la carte est au sommet d'au moins une colonne *)
 let est_dans_colonnes colonnes card =
     let rec aux colonnes i =
         if i = FArray.length colonnes then (-1)
@@ -40,45 +41,52 @@ let est_dans_colonnes colonnes card =
             else aux colonnes (i+1)
     in aux colonnes 0
 
+(* "colonne_vide" renvoie l'indice de la première colonne vide et -1 s'il n'y a en a aucune *)
 let colonne_vide colonnes =
     let rec aux colonnes i =
-        if i = FArray.length colonnes then (-1)
+        if i = FArray.length colonnes then -1
         else 
             if FArray.get colonnes i = [] then i
             else aux colonnes (i+1)
     in aux colonnes 0
 
-let rec est_dans_un_registre registres card i =
-    if i = FArray.length registres then -1
+(* "est_dans_un_registre" renvoie l'indice du premier registre qui contient la carte et -1 s'il n'y en a aucune *)
+let rec est_dans_un_registre registres card n i =
+    if i = n then -1
     else match FArray.get registres i with
-         | None -> est_dans_un_registre registres card (i+1)
-         | Some x -> if x = card then i else est_dans_un_registre registres card (i+1)
+         | None -> est_dans_un_registre registres card n (i+1)
+         | Some x -> if x = card then i else est_dans_un_registre registres card n (i+1)
 
+(* "est_dans_registres" a la même fonction que "est_dans_un_registre" sauf qu'elle vérifie s'il y a un registre *)
 let est_dans_registres registres card =
     match registres with
     | None -> -1
-    | Some x -> est_dans_un_registre x card 0
+    | Some x -> est_dans_un_registre x card (FArray.length x) 0
 
-let rec place_vide_un_registre registres i =
-    if i = FArray.length registres then (-1)
+(* "place_vide_registre" renvoie l'indice du premier registre vide *)
+let rec place_vide_registre registres n i =
+    if i = n then (-1)
     else match FArray.get registres i with
          | None -> i
-         | Some x -> place_vide_un_registre registres (i+1)
+         | Some x -> place_vide_registre registres n (i+1)
 
+(* "registre_vide" a la même fonction que "place_vide_registre" sauf qu'elle vérifie s'il y a un registre *)
 let registre_vide registres =
     match registres with
     | None -> -1
-    | Some x -> place_vide_un_registre x 0
+    | Some x -> place_vide_registre x (FArray.length x) 0
 
-let regles_colonne game coup  =
-    let depart = fst coup and arrivee = snd coup in
+(* "regles_colonne" renvoie true si le coup respecte les règles concernant les colonnes non vides en fonction du mode de jeu *)
+let regles_colonne game coup =
+    let d = fst coup and a = snd coup in
     match game with
-    | "Freecell" -> fst depart = ((fst arrivee) - 1)  &&
-                  ((snd depart = Trefle || snd depart = Pique) && (snd arrivee = Coeur || snd arrivee = Carreau) ||
-                  (snd arrivee = Trefle || snd arrivee = Pique) && (snd depart = Coeur || snd depart = Carreau))
-    | "Baker" -> fst depart = ((fst arrivee) - 1)
-    | _ -> fst depart = ((fst arrivee) - 1)  && snd depart = snd arrivee
+    | "Freecell" -> fst d = ((fst a) - 1) &&
+                  ((snd d = Trefle || snd d = Pique) && (snd a = Coeur || snd a = Carreau) ||
+                   (snd a = Trefle || snd a = Pique) && (snd d = Coeur || snd d = Carreau))
+    | "Baker" -> fst d = ((fst a) - 1)
+    | _ -> fst d = ((fst a) - 1)  && snd d = snd a
 
+(* "regles_colonne_vide" renvoie true si le coup respecte les règles concernant les colonnes vides en fonction du mode de jeu *)
 let regles_colonne_vide colonnes game coup =
     let depart = fst coup and arrivee = snd coup in
     match game with
@@ -86,16 +94,8 @@ let regles_colonne_vide colonnes game coup =
     | "Seahaven" -> colonne_vide colonnes <> -1 && fst depart = 13
     | _ -> false
 
-let coup_valide etat coup game =
-    let depart = fst coup and arrivee = snd coup in
-    if est_dans_registres etat.registres depart <> (-1) || est_dans_colonnes etat.colonnes depart <> (-1)
-    then match arrivee with
-         | PlaceVide(x) -> 
-            (x = "V" && regles_colonne_vide etat.colonnes game coup) || (x = "T" && registre_vide etat.registres <> (-1))
-         | Carte(x) -> est_dans_colonnes etat.colonnes x <> (-1) && regles_colonne game (depart, x)
-    else false
-
-let normalisation_colonne colonne depot =
+(* "normalisation_une_colonne" procède à la mise au dépôt d'une colonne et renvoie la nouvelle colonne et le nouveau dépôt *)
+let normalisation_une_colonne colonne depot =
     if colonne = [] then (colonne, depot)
     else let c = List.hd colonne in
     match snd c with
@@ -108,14 +108,16 @@ let normalisation_colonne colonne depot =
     | Carreau -> if depot.carreau = (fst c - 1) then let d = {trefle = depot.trefle; pique = depot.pique; coeur = depot.coeur; carreau = depot.carreau + 1}
             in (List.tl colonne, d) else (colonne, depot)
 
+(* "normalisation_colonnes" procède à la mise au dépôt de toutes les colonnes et renvoie les nouvelles colonnes et le nouveau dépôt *)
 let normalisation_colonnes colonnes depot =
     let rec aux colonnes depot i =
         if i = FArray.length colonnes then (colonnes, depot)
-        else let x = normalisation_colonne (FArray.get colonnes i) depot
+        else let x = normalisation_une_colonne (FArray.get colonnes i) depot
         in aux (FArray.set colonnes i (fst x)) (snd x) (i + 1)
     in aux colonnes depot 0
 
-let normalisation_registre carte depot =
+(* "normalisation_un_registre" procède à la mise au dépôt d'un registre et renvoie le nouveau registre et le nouveau dépôt *)
+let normalisation_un_registre carte depot =
     if carte = None then (None, depot)
     else let c = Option.get carte in
     match snd c with
@@ -128,50 +130,69 @@ let normalisation_registre carte depot =
     | Carreau -> if depot.carreau = (fst c - 1) then let d = {trefle = depot.trefle; pique = depot.pique; coeur = depot.coeur; carreau = depot.carreau + 1} in
                 (None, d) else (carte, depot)
 
+(* "normalisation_registres" procède à la mise au dépôt de toutes les registres et renvoie les nouvelles registres et le nouveau dépôt *)
 let normalisation_registres registres depot =
     match registres with
     | None -> (registres, depot)
     | Some x ->
         let rec aux registres depot i = 
             if i = FArray.length registres then (Some registres, depot)
-            else let reg = (normalisation_registre (FArray.get registres i) depot) in
+            else let reg = (normalisation_un_registre (FArray.get registres i) depot) in
             aux (FArray.set registres i (fst reg)) (snd reg) (i+1)
         in aux x depot 0
 
+(* "une_normalisation" procède à la mise au dépot de tout le jeu *)
 let une_normalisation etat =
     let new_col = normalisation_colonnes etat.colonnes etat.depot in
     let new_reg = normalisation_registres etat.registres (snd new_col)
-    in {depot = snd new_reg; colonnes = fst new_col; registres = fst new_reg}
+    in etat_make (snd new_reg) (fst new_col) (fst new_reg)
 
+(* "normalisation" procède à la mise au dépot de tout le jeu jusqu'à que ce ne soit plus possible*)
 let rec normalisation etat =
     let new_etat = une_normalisation etat in 
     if new_etat = etat then etat else normalisation new_etat
 
-let enleve_colonne colonnes carte i = 
+(* "enleve_colonne" enlève la carte au sommet de la colonne d'indice i *)
+let enleve_colonne colonnes i = 
     let x = FArray.get colonnes i in FArray.set colonnes i (List.tl x)
 
-let enleve_registre registres carte i =
+(* "ajoute_colonne" ajoute la carte de depart au sommet de la colonne qui contient la carte d'arrivee *)
+let ajoute_colonne colonnes depart arrivee =
+    let i = est_dans_colonnes colonnes arrivee in
+    FArray.set colonnes i (depart :: (FArray.get colonnes i))
+
+(* "ajoute_colonne_vide" ajoute la carte dans une colonne vide *)
+let ajoute_colonne_vide colonnes carte =
+    let i = colonne_vide colonnes in
+    FArray.set colonnes i (carte :: (FArray.get colonnes i))
+
+(* "enleve_registre" enlève la carte contenu dans le registre d'indice i *)
+let enleve_registre registres i =
     let r = Option.get registres in Some (FArray.set r i None)
 
+(* "ajoute_registre" ajoute la carte dans un registre vide *)
 let ajoute_registre registres carte =
     Some (FArray.set (Option.get registres) (registre_vide registres) (Some carte))
 
-let ajoute_colonne colonnes depart arrivee =
-    let i = est_dans_colonnes colonnes arrivee in
-    let x = FArray.get colonnes i in
-    FArray.set colonnes i (depart :: x)
+(* "coup_valide" renvoie true si le coup est possible en fonction des regles jeu et sa distribution *)
+let coup_valide etat coup game =
+    let depart = fst coup and arrivee = snd coup in
+    let a = 
+    match arrivee with
+    | PlaceVide(x) -> 
+            (x = "V" && regles_colonne_vide etat.colonnes game coup) || 
+            (x = "T" && registre_vide etat.registres <> (-1))
+    | Carte(x) -> depart <> x && regles_colonne game (depart, x) && est_dans_colonnes etat.colonnes x <> (-1)
+    in a && (est_dans_colonnes etat.colonnes depart <> (-1) || est_dans_registres etat.registres depart <> (-1))
 
-let ajoute_colonne_vide colonnes carte =
-    let i = colonne_vide colonnes in
-    let x = FArray.get colonnes i in
-    FArray.set colonnes i (carte :: x)
-
+(* "jouer_coup" renvoie l'etat apres l'execution d'un coup *)
 let jouer_coup etat coup =
     let depart = fst coup and arrivee = snd coup in
-    let i0 = est_dans_colonnes etat.colonnes depart and i1 = est_dans_registres etat.registres depart in
+    let i0 = est_dans_colonnes etat.colonnes depart 
+    and i1 = est_dans_registres etat.registres depart in
     
-    let new_col = if i0 <> -1 then enleve_colonne etat.colonnes depart i0 else etat.colonnes
-    and new_reg = if i1 <> -1 then enleve_registre etat.registres depart i1 else etat.registres in
+    let new_col = if i0 <> -1 then enleve_colonne etat.colonnes i0 else etat.colonnes
+    and new_reg = if i1 <> -1 then enleve_registre etat.registres i1 else etat.registres in
     
     let new_etat = etat_make etat.depot new_col new_reg in
     
@@ -186,14 +207,18 @@ let jouer_coup etat coup =
                     etat_make etat.depot new_etat.colonnes new_reg_2
         | _ -> failwith "Erreur de syntaxe des coups"
 
-let jeu etat coup =
-    let e = jouer_coup etat coup in normalisation e
-
+(* "configuration_gagnante" renvoie true si la configuration de l'etat est gagnante *)
 let configuration_gagnante etat =
-    let d = etat.depot in d.trefle = 13 && d.pique = 13 && d.coeur = 13 && d.carreau = 13
+    let d = etat.depot 
+    in d.trefle = 13 && d.pique = 13 && d.coeur = 13 && d.carreau = 13
 
+(* "check" renvoie un couple contenant un etat et un int : l'etat correspond à l'état atteint après l'exécution des coups valide
+et i correspond au nombre de coups non valides et vaut 0 si l'etat final est gagnant *)
 let rec check etat game coups i =
+    let e = normalisation etat in
     match coups with
-    | [] -> if configuration_gagnante etat then (etat, 0) else (etat, i)
-    | h :: t -> if coup_valide etat h game then check (jeu etat h) game t (i+1)
-                else (etat, i)
+    | [] -> if configuration_gagnante e then (e, 0) else (e, i)
+    | coup :: t -> if coup_valide e coup game 
+                   then check (jouer_coup e coup) game t (i+1)
+                   else (e, i)
+   
